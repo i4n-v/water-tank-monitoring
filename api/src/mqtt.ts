@@ -29,7 +29,6 @@ export default function initMqtt() {
       const buffer = Buffer.from(JSON.stringify(data));
 
       client.publish('receive-data-on-client', buffer);
-      console.log('✅ The payload has been sended to client');
     });
   } catch (error: any) {
     console.log('❗ MQTT ERROR:', error);
