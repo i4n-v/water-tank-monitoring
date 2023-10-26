@@ -27,7 +27,9 @@ export default function WaterTank({ totalVolume, percentage, currentVolume }: IW
         {waves.map((className) => (
           <div
             style={{ height: `${percentage}%` }}
-            className={'w-full rounded-3xl rounded-t-none clip wave absolute transition-all delay-300 ' + className}
+            className={
+              'w-full rounded-3xl rounded-t-none clip wave absolute transition-all delay-300 ease-in-out ' + className
+            }
           />
         ))}
       </div>
