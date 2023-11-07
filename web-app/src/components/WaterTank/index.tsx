@@ -24,8 +24,9 @@ export default function WaterTank({ totalVolume, percentage, currentVolume }: IW
             <CountUp end={currentVolume} duration={5} /> L
           </span>
         </div>
-        {waves.map((className) => (
+        {waves.map((className, index: number) => (
           <div
+            key={index}
             style={{ height: `${percentage}%` }}
             className={
               'w-full rounded-3xl rounded-t-none clip wave absolute transition-all delay-300 ease-in-out ' + className
