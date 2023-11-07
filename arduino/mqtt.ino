@@ -8,6 +8,8 @@
 #define SEND_TOPIC "receive-data-on-server"
 
 HC_SR04 ultrasonic(12,13);
+
+// Set the measurements in centimeters
 #define WATER_TANK_HEIGHT "200"
 #define WATER_TANK_WIDTH "250"
 
@@ -34,9 +36,9 @@ void setup() {
   last_message = 0;
 
   String clientName = "esp-cliente";
-  Serial.print("conectando em ");
+  Serial.print("Connecting in ");
   Serial.print(server);
-  Serial.print(" como ");
+  Serial.print(" with ");
   Serial.println(clientName);
 }
 

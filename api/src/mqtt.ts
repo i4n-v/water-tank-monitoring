@@ -1,5 +1,8 @@
 import * as mqtt from 'mqtt'; // import everything inside the mqtt module and give it the namespace "mqtt"
-import { IMqttReceivePayload, IMqttSendPayload } from './@types/mqtt.type';
+import { IMqttReceivePayload } from './@types/mqtt.type';
+import WaterMeasurementsRepositorie from './repositories/waterMeasurements.repositorie';
+import centimetersToLiters from './utils/centimetersToLiters';
+import fixeDecimals from './utils/fixeDecimals';
 
 export default function initMqtt() {
   try {
@@ -13,22 +16,33 @@ export default function initMqtt() {
       });
     });
 
-    client.on('message', (_, message) => {
+    client.on('message', async (_, message) => {
       const { height, range, width }: IMqttReceivePayload = JSON.parse(message.toString());
 
-      const totalVolume = width * height;
-      const currentVolume = width * (height - range);
-      const percentage = (currentVolume / totalVolume) * 100;
+      const radius = width / 2;
+      const area = Math.PI * (radius * 2);
+      const totalVolume = centimetersToLiters(area * height);
+      const currentVolume = centimetersToLiters(area * (height - range));
+      const percentage = fixeDecimals((currentVolume / totalVolume) * 100, 2);
+      let spentVolume = 0;
 
-      const data: IMqttSendPayload = {
-        total_volume: totalVolume,
-        current_volume: currentVolume,
-        percentage,
-      };
+      const previousMeasurement = await WaterMeasurementsRepositorie.findLast();
 
-      const buffer = Buffer.from(JSON.stringify(data));
+      if (previousMeasurement) {
+        spentVolume = previousMeasurement.current_volume - currentVolume;
+      }
 
-      client.publish('receive-data-on-client', buffer);
+      if (!previousMeasurement || currentVolume !== previousMeasurement.current_volume) {
+        const waterMeasurement = await WaterMeasurementsRepositorie.create({
+          total_volume: totalVolume,
+          current_volume: currentVolume,
+          spent_volume: spentVolume,
+          percentage,
+        });
+
+        const waterMeasurementBuffer = Buffer.from(JSON.stringify(waterMeasurement));
+        client.publish('receive-data-on-client', waterMeasurementBuffer);
+      }
     });
   } catch (error: any) {
     console.log('❗ MQTT ERROR:', error);
