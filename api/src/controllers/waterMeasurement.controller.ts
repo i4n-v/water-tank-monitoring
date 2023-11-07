@@ -23,7 +23,7 @@ class WaterMeasurementController {
     try {
       const biggesExpense = await WaterMeasurementsRepositorie.findBiggesExpense();
 
-      if (biggesExpense) {
+      if (!biggesExpense) {
         return response.status(404).json({ message: 'Nenhuma medição de água encontrada.' });
       }
 
@@ -37,7 +37,7 @@ class WaterMeasurementController {
     try {
       const lowestExpense = await WaterMeasurementsRepositorie.findLowestExpense();
 
-      if (lowestExpense) {
+      if (!lowestExpense) {
         return response.status(404).json({ message: 'Nenhuma medição de água encontrada.' });
       }
 

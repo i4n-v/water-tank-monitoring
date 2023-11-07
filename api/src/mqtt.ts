@@ -5,43 +5,57 @@ import centimetersToLiters from './utils/centimetersToLiters';
 import fixeDecimals from './utils/fixeDecimals';
 
 export default function initMqtt() {
+  function errorHandler(error: any) {
+    if (error) throw error;
+  }
+
   try {
     const client = mqtt.connect('http://localhost:1883');
 
     client.on('connect', () => {
       console.log('✅ MQTT connected with success');
 
-      client.subscribe('receive-data-on-server', (error) => {
-        if (error) throw error;
-      });
+      client.subscribe('receive-data-on-server', errorHandler);
+
+      client.subscribe('connect-on-server', errorHandler);
     });
 
-    client.on('message', async (_, message) => {
-      const { height, range, width }: IMqttReceivePayload = JSON.parse(message.toString());
+    client.on('message', async (topic, message) => {
+      if (topic === 'connect-on-server') {
+        const previousMeasurement = await WaterMeasurementsRepositorie.findLast();
 
-      const radius = width / 2;
-      const area = Math.PI * (radius * 2);
-      const totalVolume = centimetersToLiters(area * height);
-      const currentVolume = centimetersToLiters(area * (height - range));
-      const percentage = fixeDecimals((currentVolume / totalVolume) * 100, 2);
-      let spentVolume = 0;
+        if (previousMeasurement) {
+          const waterMeasurementBuffer = Buffer.from(JSON.stringify(previousMeasurement));
+          client.publish('connect-on-client', waterMeasurementBuffer);
+        }
+      } else if (topic === 'receive-data-on-server') {
+        const { height, range, width }: IMqttReceivePayload = JSON.parse(message.toString());
 
-      const previousMeasurement = await WaterMeasurementsRepositorie.findLast();
+        const radius = width / 2;
+        const area = Math.PI * (radius * 2);
+        const totalVolume = centimetersToLiters(area * height);
+        const currentVolume = centimetersToLiters(area * (height - range));
+        const percentage = fixeDecimals((currentVolume / totalVolume) * 100, 2);
+        let spentVolume = 0;
 
-      if (previousMeasurement) {
-        spentVolume = previousMeasurement.current_volume - currentVolume;
-      }
+        const previousMeasurement = await WaterMeasurementsRepositorie.findLast();
 
-      if (!previousMeasurement || currentVolume !== previousMeasurement.current_volume) {
-        const waterMeasurement = await WaterMeasurementsRepositorie.create({
-          total_volume: totalVolume,
-          current_volume: currentVolume,
-          spent_volume: spentVolume,
-          percentage,
-        });
+        if (previousMeasurement) {
+          spentVolume = previousMeasurement.current_volume - currentVolume;
+          spentVolume = spentVolume < 0 ? 0 : spentVolume;
+        }
 
-        const waterMeasurementBuffer = Buffer.from(JSON.stringify(waterMeasurement));
-        client.publish('receive-data-on-client', waterMeasurementBuffer);
+        if (!previousMeasurement || currentVolume !== previousMeasurement.current_volume) {
+          const waterMeasurement = await WaterMeasurementsRepositorie.create({
+            total_volume: totalVolume,
+            current_volume: currentVolume,
+            spent_volume: spentVolume,
+            percentage,
+          });
+
+          const waterMeasurementBuffer = Buffer.from(JSON.stringify(waterMeasurement));
+          client.publish('receive-data-on-client', waterMeasurementBuffer);
+        }
       }
     });
   } catch (error: any) {

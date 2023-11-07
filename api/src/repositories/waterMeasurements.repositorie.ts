@@ -18,11 +18,13 @@ class WaterMeasurementRepositorie {
 
     const { rows } = await this.client.query(`
       SELECT * 
-      FROM water_measurements LIMIT ${limit} OFFSET ${offset}
+      FROM water_measurements 
+        ORDER BY created_at DESC
+        LIMIT ${limit} OFFSET ${offset}
     `);
 
     const result = {
-      count: count as number,
+      count: count.count as number,
       rows: rows as IWaterMeasurement[],
     };
 

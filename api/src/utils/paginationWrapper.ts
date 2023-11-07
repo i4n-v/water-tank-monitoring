@@ -17,7 +17,7 @@ function paginationWrapper<T>(
   limit: number
 ) {
   const wrapper: IWrapper<T> = {};
-  const count = findAndCountAllObject.count;
+  const count = Number(findAndCountAllObject.count);
 
   wrapper.totalPages = Math.ceil(count / limit);
   wrapper.totalItems = count;
