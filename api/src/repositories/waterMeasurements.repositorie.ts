@@ -9,19 +9,25 @@ class WaterMeasurementRepositorie {
     this.client = client;
   }
 
-  async findAndCountAll(page: number, limit: number) {
+  async findAndCountAllByDeviceId(id: string, page: number, limit: number) {
     const offset = (page - 1) * limit;
 
     const {
       rows: [count],
-    } = await this.client.query('SELECT COUNT(id) FROM water_measurements');
+    } = await this.client.query('SELECT COUNT(id) FROM water_measurements WHERE device_id = $1', [
+      id,
+    ]);
 
-    const { rows } = await this.client.query(`
+    const { rows } = await this.client.query(
+      `
       SELECT * 
       FROM water_measurements 
+      WHERE device_id = $1
         ORDER BY created_at DESC
-        LIMIT ${limit} OFFSET ${offset}
-    `);
+        LIMIT $2 OFFSET $3
+    `,
+      [id, limit, offset]
+    );
 
     const result = {
       count: count.count as number,
@@ -31,31 +37,34 @@ class WaterMeasurementRepositorie {
     return result;
   }
 
-  async findLast() {
+  async findLastByDeviceId(id: string) {
     const {
       rows: [row],
     } = await this.client.query(
-      'SELECT * FROM water_measurements ORDER BY created_at DESC LIMIT 1'
+      'SELECT * FROM water_measurements WHERE device_id = $1 ORDER BY created_at DESC LIMIT 1',
+      [id]
     );
 
     return (row || null) as IWaterMeasurement | null;
   }
 
-  async findBiggesExpense() {
+  async findBiggesExpenseByDeviceId(id: string) {
     const {
       rows: [row],
     } = await this.client.query(
-      'SELECT * FROM water_measurements ORDER BY spent_volume DESC LIMIT 1'
+      'SELECT * FROM water_measurements WHERE device_id = $1 ORDER BY spent_volume DESC LIMIT 1',
+      [id]
     );
 
     return (row || null) as IWaterMeasurement | null;
   }
 
-  async findLowestExpense() {
+  async findLowestExpenseByDeviceId(id: string) {
     const {
       rows: [row],
     } = await this.client.query(
-      'SELECT * FROM water_measurements ORDER BY spent_volume ASC LIMIT 1'
+      'SELECT * FROM water_measurements WHERE device_id = $1 ORDER BY spent_volume ASC LIMIT 1',
+      [id]
     );
 
     return (row || null) as IWaterMeasurement | null;

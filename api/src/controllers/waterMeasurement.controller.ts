@@ -6,11 +6,18 @@ import paginationWrapper from '../utils/paginationWrapper';
 class WaterMeasurementController {
   async index(request: Request, response: Response, next: NextFunction) {
     try {
-      const { query } = request;
+      const {
+        query,
+        params: { id },
+      } = request;
       const page = query.page ? parseInt(query.page as unknown as string) : 1;
       const limit = query.limit ? parseInt(query.limit as unknown as string) : 75;
 
-      const waterMeasurements = await WaterMeasurementsRepositorie.findAndCountAll(page, limit);
+      const waterMeasurements = await WaterMeasurementsRepositorie.findAndCountAllByDeviceId(
+        id,
+        page,
+        limit
+      );
       const result = paginationWrapper(waterMeasurements, page, limit);
 
       return response.json(result);
@@ -21,7 +28,8 @@ class WaterMeasurementController {
 
   async biggestExpense(request: Request, response: Response, next: NextFunction) {
     try {
-      const biggesExpense = await WaterMeasurementsRepositorie.findBiggesExpense();
+      const { id } = request.params;
+      const biggesExpense = await WaterMeasurementsRepositorie.findBiggesExpenseByDeviceId(id);
 
       if (!biggesExpense) {
         return response.status(404).json({ message: 'Nenhuma medição de água encontrada.' });
@@ -35,7 +43,8 @@ class WaterMeasurementController {
 
   async lowestExpense(request: Request, response: Response, next: NextFunction) {
     try {
-      const lowestExpense = await WaterMeasurementsRepositorie.findLowestExpense();
+      const { id } = request.params;
+      const lowestExpense = await WaterMeasurementsRepositorie.findLowestExpenseByDeviceId(id);
 
       if (!lowestExpense) {
         return response.status(404).json({ message: 'Nenhuma medição de água encontrada.' });

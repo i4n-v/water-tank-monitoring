@@ -10,6 +10,7 @@
 HC_SR04 ultrasonic(12,13);
 
 // Set the measurements in centimeters
+#define DEVICE_ID "80793848-fb67-429c-9460-0f0322be8e67"
 #define WATER_TANK_HEIGHT "200"
 #define WATER_TANK_WIDTH "250"
 
@@ -78,6 +79,9 @@ void getAndSetWaterRange() {
 
   // Mounting payload
   String payload = "{";
+  payload += "\"device_id\":"; 
+  payload += DEVICE_ID;
+  payload += ",";
   payload += "\"height\":"; 
   payload += WATER_TANK_HEIGHT;
   payload += ",";

@@ -22,14 +22,17 @@ export default function initMqtt() {
 
     client.on('message', async (topic, message) => {
       if (topic === 'connect-on-server') {
-        const previousMeasurement = await WaterMeasurementsRepositorie.findLast();
+        const deviceId = message.toString();
+        const previousMeasurement = await WaterMeasurementsRepositorie.findLastByDeviceId(deviceId);
 
         if (previousMeasurement) {
           const waterMeasurementBuffer = Buffer.from(JSON.stringify(previousMeasurement));
           client.publish('connect-on-client', waterMeasurementBuffer);
         }
       } else if (topic === 'receive-data-on-server') {
-        const { height, range, width }: IMqttReceivePayload = JSON.parse(message.toString());
+        const { device_id, height, range, width }: IMqttReceivePayload = JSON.parse(
+          message.toString()
+        );
 
         const radius = width / 2;
         const area = Math.PI * (radius * 2);
@@ -38,7 +41,9 @@ export default function initMqtt() {
         const percentage = fixeDecimals((currentVolume / totalVolume) * 100, 2);
         let spentVolume = 0;
 
-        const previousMeasurement = await WaterMeasurementsRepositorie.findLast();
+        const previousMeasurement = await WaterMeasurementsRepositorie.findLastByDeviceId(
+          device_id
+        );
 
         if (previousMeasurement) {
           spentVolume = previousMeasurement.current_volume - currentVolume;

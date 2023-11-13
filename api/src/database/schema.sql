@@ -4,6 +4,16 @@ USE DATABASE water_tank_monitoring;
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
+DROP TABLE IF EXISTS devices;
+
+CREATE TABLE IF NOT EXISTS devices (
+  id UUID NOT NULL UNIQUE DEFAULT uuid_generate_v4(),
+  name VARCHAR NOT NULL,
+  description VARCHAR NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE NOT NULL,
+  updated_at TIMESTAMP WITH TIME ZONE NOT NULL
+);
+
 DROP TABLE IF EXISTS water_measurements;
 
 CREATE TABLE IF NOT EXISTS water_measurements (
@@ -13,5 +23,7 @@ CREATE TABLE IF NOT EXISTS water_measurements (
   spent_volume NUMERIC(10, 2) NOT NULL,
   percentage NUMERIC(10, 2) NOT NULL,
   created_at TIMESTAMP WITH TIME ZONE NOT NULL,
-  updated_at TIMESTAMP WITH TIME ZONE NOT NULL
+  updated_at TIMESTAMP WITH TIME ZONE NOT NULL,
+  device_id UUID,
+  FOREIGN KEY(device_id) REFERENCES devices(id)
 );
