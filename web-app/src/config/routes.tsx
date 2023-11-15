@@ -11,7 +11,7 @@ const routes: RouteObject[] = [
     element: <Devices />,
   },
   {
-    path: '/dashboard',
+    path: '/dashboard/:id',
     element: <Dashboard />,
   },
 ];

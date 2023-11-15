@@ -2,32 +2,32 @@ import { useCallback } from 'react';
 import api from '../config/api';
 
 export default function useWaterMeasurement() {
-  const path = '/water_measurements';
+  const path = 'water_measurements';
 
-  const getWaterMeasurements = useCallback(async (params: any) => {
+  const getWaterMeasurements = useCallback(async (id: string, params: any) => {
     try {
-      const response = await api.get(path, { params });
+      const response = await api.get(`/devices/${id}/${path}`, { params });
       return response.data;
     } catch (error: any) {
-      console.log(error);
+      return { error: error?.response?.data?.message };
     }
   }, []);
 
-  const getBiggestExpense = useCallback(async () => {
+  const getBiggestExpense = useCallback(async (id: string) => {
     try {
-      const response = await api.get(path + '/biggest_expense');
+      const response = await api.get(`devices/${id}/${path}/biggest_expense`);
       return response.data;
     } catch (error: any) {
-      console.log(error);
+      return { error: error?.response?.data?.message };
     }
   }, []);
 
-  const getLowestExpense = useCallback(async () => {
+  const getLowestExpense = useCallback(async (id: string) => {
     try {
-      const response = await api.get(path + '/lowest_expense');
+      const response = await api.get(`/devices/${id}/${path}/lowest_expense`);
       return response.data;
     } catch (error: any) {
-      console.log(error);
+      return { error: error?.response?.data?.message };
     }
   }, []);
 
