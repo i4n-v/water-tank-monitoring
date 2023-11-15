@@ -71,6 +71,7 @@ class WaterMeasurementRepositorie {
   }
 
   async create({
+    device_id,
     total_volume,
     current_volume,
     spent_volume,
@@ -82,11 +83,11 @@ class WaterMeasurementRepositorie {
       rows: [row],
     } = await this.client.query(
       `
-      INSERT INTO water_measurements(total_volume, current_volume, spent_volume, percentage, created_at, updated_at)
-      VALUES($1, $2, $3, $4, $5, $6)
+      INSERT INTO water_measurements(device_id, total_volume, current_volume, spent_volume, percentage, created_at, updated_at)
+      VALUES($1, $2, $3, $4, $5, $6, $7)
       RETURNING *
     `,
-      [total_volume, current_volume, spent_volume, percentage, currentDate, currentDate]
+      [device_id, total_volume, current_volume, spent_volume, percentage, currentDate, currentDate]
     );
 
     return row as IWaterMeasurement;

@@ -27,7 +27,7 @@ export default function initMqtt() {
 
         if (previousMeasurement) {
           const waterMeasurementBuffer = Buffer.from(JSON.stringify(previousMeasurement));
-          client.publish('connect-on-client', waterMeasurementBuffer);
+          client.publish(`connect-on-client-${deviceId}`, waterMeasurementBuffer);
         }
       } else if (topic === 'receive-data-on-server') {
         const { device_id, height, range, width }: IMqttReceivePayload = JSON.parse(
@@ -52,6 +52,7 @@ export default function initMqtt() {
 
         if (!previousMeasurement || currentVolume !== previousMeasurement.current_volume) {
           const waterMeasurement = await WaterMeasurementsRepositorie.create({
+            device_id,
             total_volume: totalVolume,
             current_volume: currentVolume,
             spent_volume: spentVolume,
@@ -59,7 +60,7 @@ export default function initMqtt() {
           });
 
           const waterMeasurementBuffer = Buffer.from(JSON.stringify(waterMeasurement));
-          client.publish('receive-data-on-client', waterMeasurementBuffer);
+          client.publish(`receive-data-on-client-${device_id}`, waterMeasurementBuffer);
         }
       }
     });

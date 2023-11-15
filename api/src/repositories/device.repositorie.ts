@@ -17,29 +17,49 @@ class DeviceRepositorie {
     return (row || null) as IDevice | null;
   }
 
-  async findAndCountAll(page: number, limit: number) {
+  async findAndCountAll(search: string, page: number, limit: number) {
     const offset = (page - 1) * limit;
 
     const {
       rows: [count],
     } = await this.client.query('SELECT COUNT(id) FROM devices');
 
-    const { rows } = await this.client.query(
-      `
-      SELECT * 
-      FROM devices
-        ORDER BY created_at DESC
-        LIMIT $1 OFFSET $2
-    `,
-      [limit, offset]
-    );
+    if (search) {
+      const { rows } = await this.client.query(
+        `
+        SELECT * 
+        FROM devices
+        WHERE name ILIKE $3
+          ORDER BY created_at DESC
+          LIMIT $1 OFFSET $2
+      `,
+        [limit, offset, `%${search}%`]
+      );
 
-    const result = {
-      count: count.count as number,
-      rows: rows as IDevice[],
-    };
+      const result = {
+        count: count.count as number,
+        rows: rows as IDevice[],
+      };
 
-    return result;
+      return result;
+    } else {
+      const { rows } = await this.client.query(
+        `
+        SELECT * 
+        FROM devices
+          ORDER BY created_at DESC
+          LIMIT $1 OFFSET $2
+      `,
+        [limit, offset]
+      );
+
+      const result = {
+        count: count.count as number,
+        rows: rows as IDevice[],
+      };
+
+      return result;
+    }
   }
 
   async create({ name, description }: Omit<IDevice, 'id' | 'created_at' | 'updated_at'>) {
@@ -49,7 +69,7 @@ class DeviceRepositorie {
       rows: [row],
     } = await this.client.query(
       `
-      INSERT INTO water_measurements(name, description, created_at, updated_at)
+      INSERT INTO devices(name, description, created_at, updated_at)
       VALUES($1, $2, $3, $4)
       RETURNING *
     `,

@@ -1,5 +1,6 @@
 interface IWaterMeasurement {
   id: string;
+  device_id: string;
   total_volume: number;
   current_volume: number;
   spent_volume: number;

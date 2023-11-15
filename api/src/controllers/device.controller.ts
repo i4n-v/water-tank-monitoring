@@ -10,8 +10,9 @@ class DeviceController {
       const { query } = request;
       const page = query.page ? parseInt(query.page as unknown as string) : 1;
       const limit = query.limit ? parseInt(query.limit as unknown as string) : 75;
+      const search = query.search as string;
 
-      const devices = await DeviceRepositorie.findAndCountAll(page, limit);
+      const devices = await DeviceRepositorie.findAndCountAll(search, page, limit);
       const result = paginationWrapper(devices, page, limit);
 
       return response.json(result);
@@ -51,7 +52,7 @@ class DeviceController {
 
       const device = await DeviceRepositorie.findById(id);
 
-      if (device) {
+      if (!device) {
         return response.status(401).json({ message: 'Dipositivo não encontrado.' });
       }
 
